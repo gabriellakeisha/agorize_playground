@@ -1,32 +1,46 @@
-//
-// You should modify this file.
-//
 #include <common/Root.h>
 #include <CardinalityEstimation.h>
 
-void CEEngine::insertTuple(const std::vector<int>& tuple)
-{
-    // Implement your insert tuple logic here.
-}
-
-void CEEngine::deleteTuple(const std::vector<int>& tuple, int tupleId)
-{
-    // Implement your delete tuple logic here.
-}
-
-int CEEngine::query(const std::vector<CompareExpression>& quals)
-{
-    // Implement your query logic here.
-    return 0;
-}
-
-void CEEngine::prepare()
-{
-    // Implement your prepare logic here.
-}
-
 CEEngine::CEEngine(int num, DataExecuter *dataExecuter)
-{
-    // Implement your constructor here.
+    : countMinA(100, 5), countMinB(100, 5), sampler(0.1) {
     this->dataExecuter = dataExecuter;
+    prepare();  // Prepare CMS and sampling
+}
+
+void CEEngine::insertTuple(const std::vector<int>& tuple) {
+    int valueA = tuple[0];
+    int valueB = tuple[1];
+
+    if (sampler.shouldSample()) {
+        countMinA.add(valueA);
+        countMinB.add(valueB);
+    }
+}
+
+void CEEngine::deleteTuple(const std::vector<int>& tuple, int tupleId) {
+    int valueA = tuple[0];
+    int valueB = tuple[1];
+
+    countMinA.remove(valueA);
+    countMinB.remove(valueB);
+}
+
+int CEEngine::query(const std::vector<CompareExpression>& quals) {
+    int columnAResult = INT_MAX;
+    int columnBResult = INT_MAX;
+
+    for (const auto& qual : quals) {
+        if (qual.columnIdx == 0) {
+            columnAResult = countMinA.estimate(qual.value);
+        }
+        if (qual.columnIdx == 1) {
+            columnBResult = countMinB.estimate(qual.value);
+        }
+    }
+
+    return std::min(columnAResult, columnBResult);
+}
+
+void CEEngine::prepare() {
+    // Reset or initialize any components if necessary
 }

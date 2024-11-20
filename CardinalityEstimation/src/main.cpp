@@ -3,11 +3,11 @@
 
 int main(int argc, char *argv[])
 {
-    int initSize = 100000; // Initial data size.
-    int opSize = 10000; // Number of operations.
+    int initSize = 100000;  // Initial data size
+    int opSize = 10000;  // Number of operations
     double score = 0;
     int cnt = 0;
-    
+
     DataExecuterDemo dataExecuter(initSize - 1, opSize);
     CEEngine ceEngine(initSize, &dataExecuter);
     Action action = dataExecuter.getNextAction();
